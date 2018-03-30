@@ -4,7 +4,10 @@ const moment = require('moment');
 const path = require('path');
 
 const client = new Discord.Client({disabledEvents: ['TYPING_START']});
-const welcomeClip = path.resolve(config.chris.welcomeClip);
+const welcomeClips = {
+    chris: path.resolve(config.chris.welcomeClip),
+    mitch: path.resolve(config.mitch.welcomeClip),
+};
 
 const log = function(message)
 {
@@ -37,6 +40,11 @@ const chipCount = function()
 const isChris = function(user)
 {
     return (user.id == config.chris.id);
+}
+
+const isMitch = function(user)
+{
+    return (user.id == config.mitch.id);
 }
 
 client.on('ready', () =>
@@ -74,7 +82,7 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
     
     if (isChris(oldMember) &&
         isChris(newMember) &&
-        oldMember.voiceChannel === undefined &&
+        oldMember.voiceChannel !== newChannel &&
         newChannel !== undefined)
     {
         log('Chris joined a voice channel!');
@@ -85,7 +93,30 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
             log('Joined voice channel.');
             log('Playing welcome message...');
 
-            const player = connection.playFile(welcomeClip);
+            const player = connection.playFile(welcomeClips.chris);
+            player.on('end', () =>
+            {
+                log('Welcome message finished.');
+                log('Leaving voice channel.')
+                connection.disconnect();
+            });
+        });
+    }
+
+    if (isMitch(oldMember) &&
+        isMitch(newMember) &&
+        oldMember.voiceChannel !== newChannel &&
+        newChannel !== undefined)
+    {
+        log('Mitch joined a voice channel!');
+        log(`Joining ${newChannel.name}...`);
+
+        newChannel.join().then((connection) =>
+        {
+            log('Joined voice channel.');
+            log('Playing welcome message...');
+
+            const player = connection.playFile(welcomeClips.mitch);
             player.on('end', () =>
             {
                 log('Welcome message finished.');

@@ -1,5 +1,5 @@
 # Don't commit config
-config.js
+config*.js
 
 # Logs
 logs

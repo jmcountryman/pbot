@@ -153,5 +153,15 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
     }
 });
 
+process.on('SIGINT', () =>
+{
+    log('Caught Ctrl-C; bye.');
+
+    client.destroy().then(() =>
+    {
+        process.exit()
+    });
+});
+
 // Let's do it!
 client.login(config.token);

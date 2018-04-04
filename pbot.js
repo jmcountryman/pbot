@@ -14,7 +14,7 @@ const log = function(message)
     const timestamp = moment();
 
     console.log(`${timestamp} ${message}`);
-}
+};
 
 const chipCount = function()
 {
@@ -40,17 +40,68 @@ const chipCount = function()
 const isChris = function(user)
 {
     return (user.id == config.chris.id);
-}
+};
 
 const isMitch = function(user)
 {
     return (user.id == config.mitch.id);
+};
+
+const playAudio = function(channel, file)
+{
+    channel.join().then((connection) =>
+    {
+        log(`Joined voice channel "${channel.name}".`);
+        log(`Playing audio: ${file}...`);
+
+        const player = connection.playFile(file);
+        player.on('end', () =>
+        {
+            log('Audio finished.');
+            log('Leaving voice channel.')
+            connection.disconnect();
+        });
+    });
 }
 
 client.on('ready', () =>
 {
     log('Connected!');
     log('Waiting for Chris...');
+});
+
+client.on('message', (message) =>
+{
+    const author = message.member;
+
+    if(author.id == message.guild.owner.id)
+    {
+        if(message.content.startsWith(config.commandPrefix))
+        {
+            // TODO: load these dynamically from files
+            const command = message.content.slice(config.commandPrefix.length).toLowerCase();
+            const channel = author.voiceChannel;
+
+            switch(command)
+            {
+                case 'baby':
+                    if(channel)
+                    {
+                        message.react('👶');
+                        playAudio(channel, config.mitch.welcomeClip);
+                    }
+                    break;
+
+                case 'chris':
+                    if(channel)
+                    {
+                        message.react('🔌');
+                        playAudio(channel, config.chris.welcomeClip);
+                    }
+                    break;
+            }
+        }
+    }
 });
 
 // when Chris logs on, update his nickname
@@ -79,28 +130,16 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
     log(`Voice status change: ${newMember.id} - ${newMember.nickname}`);
 
     const newChannel = newMember.voiceChannel;
-    
+ 
+    // TODO: make this generic
     if (isChris(oldMember) &&
         isChris(newMember) &&
         oldMember.voiceChannel !== newChannel &&
         newChannel !== undefined)
     {
         log('Chris joined a voice channel!');
-        log(`Joining ${newChannel.name}...`);
 
-        newChannel.join().then((connection) =>
-        {
-            log('Joined voice channel.');
-            log('Playing welcome message...');
-
-            const player = connection.playFile(welcomeClips.chris);
-            player.on('end', () =>
-            {
-                log('Welcome message finished.');
-                log('Leaving voice channel.')
-                connection.disconnect();
-            });
-        });
+        playAudio(newChannel, welcomeClips.chris);
     }
 
     if (isMitch(oldMember) &&
@@ -109,21 +148,8 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
         newChannel !== undefined)
     {
         log('Mitch joined a voice channel!');
-        log(`Joining ${newChannel.name}...`);
 
-        newChannel.join().then((connection) =>
-        {
-            log('Joined voice channel.');
-            log('Playing welcome message...');
-
-            const player = connection.playFile(welcomeClips.mitch);
-            player.on('end', () =>
-            {
-                log('Welcome message finished.');
-                log('Leaving voice channel.')
-                connection.disconnect();
-            });
-        });
+        playAudio(newChannel, welcomeClips.mitch);
     }
 });
 

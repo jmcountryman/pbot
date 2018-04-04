@@ -10,6 +10,12 @@ module.exports = {
     token: '',
 
     /*
+     * The message prefix this bot will look for to determine if a message is a command.
+     * E.g., "!baby" is a command, but "baby" is just a message
+     */
+    commandPrefix: '!',
+
+    /*
      * The target.
      */
     chris: {
@@ -34,6 +40,14 @@ module.exports = {
          * This audio file is played when Chris joins a voice channel.
          */
         welcomeClip: './assets/welcome_chris.mp3',
+    },
+
+    /*
+     * The... other target.
+     */
+    mitch: {
+        id: '',
+        welcomeClip: './assets/welcome_mitch.mp3',
     },
 
     /*

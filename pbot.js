@@ -101,13 +101,18 @@ client.on('message', (message) =>
                 case 'chris':
                     if(channel)
                     {
-                        message.react('🔌');
+                        const nowow = client.emojis.find('name', 'nowow');
+
+                        message.react(nowow);
                         playAudio(channel, config.chris.welcomeClip);
                     }
                     break;
                 case 'chase':
                     if(channel)
                     {
+                        const mello = client.emojis.find('name', mello);
+
+                        message.react(mello);
                         playAudio(channel, config.chase.welcomeClip);
                     }
                     break;

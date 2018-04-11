@@ -93,7 +93,9 @@ client.on('message', (message) =>
                 case 'baby':
                     if(channel)
                     {
-                        message.react('👶');
+                        const baby = client.emojis.find('name', 'baby');
+
+                        message.react(baby);
                         playAudio(channel, config.mitch.welcomeClip);
                     }
                     break;

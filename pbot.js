@@ -7,6 +7,7 @@ const client = new Discord.Client({disabledEvents: ['TYPING_START']});
 const welcomeClips = {
     chris: path.resolve(config.chris.welcomeClip),
     mitch: path.resolve(config.mitch.welcomeClip),
+    chase: path.resolve(config.chase.welcomeClip),
 };
 
 const log = function(message)
@@ -45,6 +46,11 @@ const isChris = function(user)
 const isMitch = function(user)
 {
     return (user.id == config.mitch.id);
+};
+
+const isChase = function(user)
+{
+    return (user.id == config.chase.id);
 };
 
 const playAudio = function(channel, file)
@@ -99,6 +105,12 @@ client.on('message', (message) =>
                         playAudio(channel, config.chris.welcomeClip);
                     }
                     break;
+                case 'chase':
+                    if(channel)
+                    {
+                        playAudio(channel, config.chase.welcomeClip);
+                    }
+                    break;
             }
         }
     }
@@ -150,6 +162,16 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
         log('Mitch joined a voice channel!');
 
         playAudio(newChannel, welcomeClips.mitch);
+    }
+
+    if (isChase(oldMember) &&
+        isChase(newMember) &&
+        oldMember.voiceChannel !== newChannel &&
+        newChannel !== undefined)
+    {
+        log('Chase joined a voice channel!');
+
+        playAudio(newChannel, welcomeClips.chase);
     }
 });
 

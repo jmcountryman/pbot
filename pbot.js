@@ -80,7 +80,8 @@ client.on('message', (message) =>
 {
     const author = message.member;
 
-    if(author.id == message.guild.owner.id)
+    if(author.id == message.guild.owner.id ||
+        author.id == config.owner)
     {
         if(message.content.startsWith(config.commandPrefix))
         {

@@ -10,6 +10,11 @@ module.exports = {
     token: '',
 
     /*
+     * The ID of the bot's owner. This person and the server owner can run chat commands.
+     */
+    owner: '',
+
+    /*
      * The message prefix this bot will look for to determine if a message is a command.
      * E.g., "!baby" is a command, but "baby" is just a message
      */

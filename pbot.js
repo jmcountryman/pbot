@@ -110,7 +110,7 @@ client.on('message', (message) =>
                 case 'chase':
                     if(channel)
                     {
-                        const mello = client.emojis.find('name', mello);
+                        const mello = client.emojis.find('name', 'mello');
 
                         message.react(mello);
                         playAudio(channel, config.chase.welcomeClip);

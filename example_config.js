@@ -51,6 +51,15 @@ module.exports = {
     },
 
     /*
+     * The... other other target.
+     */
+    chase: {
+        id: '',
+        welcomeClip: './assets/welcome_chase.mp3',
+    },
+
+
+    /*
      * These are used to determine when the chip should change to a different unit. You probably
      * don't need to change these.
      */

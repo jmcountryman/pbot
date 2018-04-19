@@ -1,7 +1,9 @@
 const config = require('./config');
 const Discord = require('discord.js');
 const moment = require('moment');
+
 const path = require('path');
+const util = require('util');
 
 const client = new Discord.Client({disabledEvents: ['TYPING_START']});
 const welcomeClips = {
@@ -63,6 +65,11 @@ const playAudio = function playAudio(channel, file)
         log(`Playing audio: ${file}...`);
 
         const player = connection.playFile(file);
+
+        player.on('error', (err) =>
+        {
+            console.error(util.inspect(err, false, null));
+        });
 
         player.on('end', () =>
         {

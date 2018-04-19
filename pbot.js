@@ -86,6 +86,12 @@ client.on('ready', () =>
     log('Waiting for Chris...');
 });
 
+client.on('error', (err) =>
+{
+    console.log('Websocket error!');
+    console.error(util.inspect(err, false, null));
+});
+
 client.on('message', (message) =>
 {
     const author = message.member;
@@ -164,7 +170,7 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
     log(`Voice status change: ${newMember.id} - ${newMember.nickname}`);
 
     const newChannel = newMember.voiceChannel;
- 
+
     // TODO: make this generic
     if (isChris(oldMember) &&
         isChris(newMember) &&

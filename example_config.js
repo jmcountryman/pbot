@@ -1,3 +1,5 @@
+const {Collection} = require('discord.js');
+
 /*
  * An example config file. Rename this to "config.js" and fill in the empty values before running
  * this bot.
@@ -22,54 +24,51 @@ module.exports = {
 
     /*
      * The target.
+     *
+     * This is a Discord.js Collection object where the key is the target's ID and the value is
+     * the target's configuration.
      */
-    chris: {
-        /* 
-         * This user's name will be updated when they log in, based on `coldTurkeyDate` below.
-         * 
-         * Check out "Developer Mode" in Discord's "Appearance" settings—it adds an option
-         * to the context menu to copy various objects' IDs.
-         */
-        id: '',
-        /*
-         * This is the date on which Chris quit playing WoW cold turkey. Their username gets updated
-         * to be an AA-style chip indicating how long it's been. Sorry if that's problematic.
-         */
-        coldTurkeyDate: '2018-02-26',
-        /*
-         * This gets passed to moment.js to parse coldTurkeyDate.
-         * https://momentjs.com/docs/#/parsing/string-format/
-         */
-        coldTurkeyDateFormat: 'YYYY-MM-DD', 
-        /*
-         * This audio file is played when Chris joins a voice channel.
-         */
-        welcomeClip: './assets/welcome_chris.mp3',
-    },
+    targets: new Collection([
+        [
+            '', // The target's ID.
+            {
+                /*
+                 * If these two values are set, the bot will change the user's to a "chip" based on
+                 * how long it's been since coldTurkeyDate. coldTurkeyDateFormat is used by
+                 * moment.js to parse coldTurkeyDate.
+                 */
+                coldTurkeyDate: '2018-02-26',
+                coldTurkeyDateFormat: 'YYYY-MM-DD',
 
-    /*
-     * The... other target.
-     */
-    mitch: {
-        id: '',
-        welcomeClip: './assets/welcome_mitch.mp3',
-    },
+                /*
+                 * This audio file will be played when the target joins a voice channel.
+                 */
+                welcomeClip: './assets/welcome_clip.mp3',
 
-    /*
-     * The... other other target.
-     */
-    chase: {
-        id: '',
-        welcomeClip: './assets/welcome_chase.mp3',
-    },
-
-    /*
-     * The Jamie.
-     */
-    jamie: {
-        id: '',
-        welcomeClip: './assets/welcome_jamie.mp3',
-    },
+                /*
+                 * If these two values are set, the guild owner or bot owner can send "!<command>"
+                 * in chat and welcomeClip will be played in the message author's voice channel.
+                 * commandReaction has to be the name of a custom emoji on the server.
+                 *
+                 * E.g., in this case, if the server owner is in the "General" voice channel and
+                 * sends "!song", the bot will play assets/welcome_clip.mp3 in that channel.
+                 */
+                command: 'song',
+                commandReaction: 'customemoji',
+            },
+        ],
+        [
+            '', // Another target's ID.
+            {
+                /*
+                 * All values are optional.
+                 */
+                welcomeClip: './assets/welcome_clip2.mp3',
+                command: 'song2',
+                commandReaction: 'customemoji2',
+            },
+        ],
+    ]),
 
     /*
      * These are used to determine when the chip should change to a different unit. You probably

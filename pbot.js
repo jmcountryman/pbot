@@ -6,12 +6,6 @@ const path = require('path');
 const util = require('util');
 
 const client = new Discord.Client({disabledEvents: ['TYPING_START']});
-const welcomeClips = {
-    chris: path.resolve(config.chris.welcomeClip),
-    mitch: path.resolve(config.mitch.welcomeClip),
-    chase: path.resolve(config.chase.welcomeClip),
-    jamie: path.resolve(config.jamie.welcomeClip),
-};
 
 const log = function log(message)
 {
@@ -20,9 +14,9 @@ const log = function log(message)
     console.log(`${timestamp} ${message}`);
 };
 
-const chipCount = function chipCount()
+const chipCount = function chipCount(target)
 {
-    const startDate = moment(config.chris.coldTurkeyDate, config.chris.coldTurkeyDateFormat);
+    const startDate = moment(target.coldTurkeyDate, target.coldTurkeyDateFormat);
     const today = moment();
 
     let name = '';
@@ -43,26 +37,6 @@ const chipCount = function chipCount()
     return name;
 };
 
-const isChris = function isChris(user)
-{
-    return (user.id === config.chris.id);
-};
-
-const isMitch = function isMitch(user)
-{
-    return (user.id === config.mitch.id);
-};
-
-const isChase = function isChase(user)
-{
-    return (user.id === config.chase.id);
-};
-
-const isJamie = function isJamie(user)
-{
-    return (user.id === config.jamie.id);
-};
-
 const playAudio = function playAudio(channel, file)
 {
     channel.join().then((connection) =>
@@ -74,7 +48,8 @@ const playAudio = function playAudio(channel, file)
 
         player.on('error', (err) =>
         {
-            console.error(util.inspect(err, false, null));
+            log('playAudio error!');
+            log(util.inspect(err, false, null));
         });
 
         player.on('end', () =>
@@ -94,8 +69,8 @@ client.on('ready', () =>
 
 client.on('error', (err) =>
 {
-    console.log('Websocket error!');
-    console.error(util.inspect(err, false, null));
+    log('Websocket error!');
+    log(util.inspect(err, false, null));
 });
 
 client.on('message', (message) =>
@@ -107,54 +82,20 @@ client.on('message', (message) =>
     {
         if (message.content.startsWith(config.commandPrefix))
         {
-            // TODO: load these dynamically from files
             const command = message.content.slice(config.commandPrefix.length).toLowerCase();
             const channel = author.voiceChannel;
 
-            switch (command)
+            const target = config.targets.find('command', command);
+
+            if (channel &&
+                target &&
+                target.welcomeClip &&
+                target.commandReaction)
             {
-                case 'baby':
-                    if (channel)
-                    {
-                        const baby = client.emojis.find('name', 'baby');
+                const emoji = client.emojis.find('name', target.commandReaction);
 
-                        message.react(baby);
-                        playAudio(channel, welcomeClips.mitch);
-                    }
-                    break;
-
-                case 'chris':
-                    if (channel)
-                    {
-                        const nowow = client.emojis.find('name', 'nowow');
-
-                        message.react(nowow);
-                        playAudio(channel, welcomeClips.chris);
-                    }
-                    break;
-
-                case 'mello':
-                    if (channel)
-                    {
-                        const mello = client.emojis.find('name', 'mello');
-
-                        message.react(mello);
-                        playAudio(channel, welcomeClips.chase);
-                    }
-                    break;
-
-                case 'fuck':
-                    if (channel)
-                    {
-                        const bunk = client.emojis.find('name', 'bunk');
-
-                        message.react(bunk);
-                        playAudio(channel, welcomeClips.jamie);
-                    }
-                    break;
-
-                default:
-                    break;
+                message.react(emoji);
+                playAudio(channel, target.welcomeClip);
             }
         }
     }
@@ -163,19 +104,26 @@ client.on('message', (message) =>
 // when Chris logs on, update his nickname
 client.on('presenceUpdate', (oldMember, newMember) =>
 {
-    log(`User presence change: ${newMember.id} - ${newMember.nickname}, ${oldMember.presence.status} => ${newMember.presence.status}`);
+    log(`User presence change: ${newMember.user.username} (${newMember.id}), ${oldMember.presence.status} => ${newMember.presence.status}`);
 
-    if (isChris(oldMember) &&
-        isChris(newMember) &&
-        oldMember.presence.status === 'offline' &&
+    if (oldMember.presence.status === 'offline' &&
         newMember.presence.status === 'online')
     {
-        log('Chris logged on!');
-        const newNickname = chipCount();
-        if (newMember.nickname !== newNickname)
+        const target = config.targets.get(newMember.id);
+
+        if (target &&
+            target.coldTurkeyDate &&
+            target.coldTurkeyDateFormat)
         {
-            log('Changing nickname.');
-            newMember.setNickname(chipCount());
+            log('Target logged on!');
+
+            const newNickname = chipCount(target);
+
+            if (oldMember.nickname !== newNickname)
+            {
+                log('Changing nickname.');
+                newMember.setNickname(newNickname);
+            }
         }
     }
 });
@@ -187,45 +135,16 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
 
     const newChannel = newMember.voiceChannel;
 
-    // TODO: make this generic
-    if (isChris(oldMember) &&
-        isChris(newMember) &&
+    const target = config.targets.get(newMember.id);
+
+    if (target &&
+        target.welcomeClip &&
         oldMember.voiceChannel !== newChannel &&
         newChannel !== undefined)
     {
-        log('Chris joined a voice channel!');
+        log('Target joined a voice channel');
 
-        playAudio(newChannel, welcomeClips.chris);
-    }
-
-    if (isMitch(oldMember) &&
-        isMitch(newMember) &&
-        oldMember.voiceChannel !== newChannel &&
-        newChannel !== undefined)
-    {
-        log('Mitch joined a voice channel!');
-
-        playAudio(newChannel, welcomeClips.mitch);
-    }
-
-    if (isChase(oldMember) &&
-        isChase(newMember) &&
-        oldMember.voiceChannel !== newChannel &&
-        newChannel !== undefined)
-    {
-        log('Chase joined a voice channel!');
-
-        playAudio(newChannel, welcomeClips.chase);
-    }
-
-    if (isJamie(oldMember) &&
-        isJamie(newMember) &&
-        oldMember.voiceChannel !== newChannel &&
-        newChannel !== undefined)
-    {
-        log('Jamie joined a voice channel!');
-
-        playAudio(newChannel, welcomeClips.jamie);
+        playAudio(newChannel, target.welcomeClip);
     }
 });
 

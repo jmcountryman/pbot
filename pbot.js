@@ -131,7 +131,7 @@ client.on('presenceUpdate', (oldMember, newMember) =>
 // when Chris joins voice chat, welcome him
 client.on('voiceStateUpdate', (oldMember, newMember) =>
 {
-    log(`Voice status change: ${newMember.id} - ${newMember.nickname}`);
+    log(`Voice status change: ${newMember.user.username} (${newMember.id})`);
 
     const newChannel = newMember.voiceChannel;
 

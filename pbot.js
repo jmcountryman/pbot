@@ -10,6 +10,7 @@ const welcomeClips = {
     chris: path.resolve(config.chris.welcomeClip),
     mitch: path.resolve(config.mitch.welcomeClip),
     chase: path.resolve(config.chase.welcomeClip),
+    jamie: path.resolve(config.jamie.welcomeClip),
 };
 
 const log = function log(message)
@@ -55,6 +56,11 @@ const isMitch = function isMitch(user)
 const isChase = function isChase(user)
 {
     return (user.id === config.chase.id);
+};
+
+const isJamie = function isJamie(user)
+{
+    return (user.id === config.jamie.id);
 };
 
 const playAudio = function playAudio(channel, file)
@@ -137,6 +143,16 @@ client.on('message', (message) =>
                     }
                     break;
 
+                case 'fuck':
+                    if (channel)
+                    {
+                        const bunk = client.emojis.find('name', 'bunk');
+
+                        message.react(bunk);
+                        playAudio(channel, welcomeClips.jamie);
+                    }
+                    break;
+
                 default:
                     break;
             }
@@ -200,6 +216,16 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
         log('Chase joined a voice channel!');
 
         playAudio(newChannel, welcomeClips.chase);
+    }
+
+    if (isJamie(oldMember) &&
+        isJamie(newMember) &&
+        oldMember.voiceChannel !== newChannel &&
+        newChannel !== undefined)
+    {
+        log('Jamie joined a voice channel!');
+
+        playAudio(newChannel, welcomeClips.jamie);
     }
 });
 

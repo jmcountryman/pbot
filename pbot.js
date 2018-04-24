@@ -2,7 +2,6 @@ const config = require('./config');
 const Discord = require('discord.js');
 const moment = require('moment');
 
-const path = require('path');
 const util = require('util');
 
 const client = new Discord.Client({disabledEvents: ['TYPING_START']});
@@ -64,7 +63,6 @@ const playAudio = function playAudio(channel, file)
 client.on('ready', () =>
 {
     log('Connected!');
-    log('Waiting for Chris...');
 });
 
 client.on('error', (err) =>

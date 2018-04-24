@@ -2,21 +2,24 @@ FROM node:9-alpine
 
 ARG config_file=config.js
 
-# Install packages needed for node modules
-RUN apk add --no-cache python build-base && \
-    rm -rf /var/cache/apk/*
+WORKDIR pbot
+
+ADD package.json /
+ADD yarn.lock /
+ADD https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz /
 
 # Install ffmpeg
-ADD https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz /
 RUN mkdir /ffmpeg && \
     tar -xJf /ffmpeg-release-64bit-static.tar.xz -C /ffmpeg --strip-components=1 && \
     cp /ffmpeg/ffmpeg /usr/local/bin/ && \
     rm -rf /ffmpeg*
 
-WORKDIR pbot
+# Install node modules
+RUN apk add --no-cache python build-base && \
+    rm -rf /var/cache/apk/* && \
+    yarn
 
 ADD . .
-RUN yarn && \
-    mv $config_file config.js
+ADD $config_file /config.js
 
 CMD node pbot.js

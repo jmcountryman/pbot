@@ -63,6 +63,8 @@ const playAudio = function playAudio(channel, file)
 client.on('ready', () =>
 {
     log('Connected!');
+
+    client.user.setPresence({status: 'idle', game: {name: 'watersports'}});
 });
 
 client.on('error', (err) =>

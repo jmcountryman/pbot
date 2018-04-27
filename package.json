@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "lint": "eslint *.js || true"
+  },
   "dependencies": {
     "discord.js": "^11.3.2",
     "moment": "^2.20.1",

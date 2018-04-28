@@ -20,6 +20,6 @@ RUN apk add --no-cache python build-base && \
     yarn
 
 ADD . .
-ADD $config_file /config.js
+ADD $config_file config.js
 
 CMD node pbot.js

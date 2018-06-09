@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "lint": "eslint *.js || true"
+    "lint": "eslint *.js"
   },
   "dependencies": {
     "discord.js": "^11.3.2",

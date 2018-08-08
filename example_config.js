@@ -41,7 +41,9 @@ module.exports = {
                 coldTurkeyDateFormat: 'YYYY-MM-DD',
 
                 /*
-                 * This audio file will be played when the target joins a voice channel.
+                 * This audio file will be played when the target joins a voice channel. This can
+                 * also be a list of audio files; in that case a random one will be chosen each
+                 * time.
                  */
                 welcomeClip: './assets/welcome_clip.mp3',
 
@@ -63,7 +65,10 @@ module.exports = {
                 /*
                  * All values are optional.
                  */
-                welcomeClip: './assets/welcome_clip2.mp3',
+                welcomeClip: [
+                    './assets/welcome_clip2.mp3',
+                    './assets/welcome_clip3.mp3',
+                ],
                 command: 'song2',
                 commandReaction: 'customemoji2',
             },

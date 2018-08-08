@@ -60,18 +60,19 @@ const playAudio = function playAudio(channel, file)
     });
 };
 
-client.on('ready', () =>
+const playWelcomeClip = function playWelcomeClip(target, channel)
 {
-    log('Connected!');
+    if (typeof target.welcomeClip === 'string')
+    {
+        playAudio(channel, target.welcomeClip);
+    }
+    else if (typeof target.welcomeClip === 'object' && target.welcomeClip.length > 0)
+    {
+        const randomIndex = Math.floor(Math.random() * target.welcomeClip.length);
 
-    client.user.setPresence({status: 'idle', game: {name: 'watersports'}});
-});
-
-client.on('error', (err) =>
-{
-    log('Websocket error!');
-    log(util.inspect(err, false, null));
-});
+        playAudio(channel, target.welcomeClip[randomIndex]);
+    }
+};
 
 client.on('message', (message) =>
 {
@@ -95,7 +96,7 @@ client.on('message', (message) =>
                 const emoji = client.emojis.find('name', target.commandReaction);
 
                 message.react(emoji);
-                playAudio(channel, target.welcomeClip);
+                playWelcomeClip(target, channel);
             }
         }
     }
@@ -137,15 +138,28 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
 
     const target = config.targets.get(newMember.id);
 
-    if (target &&
-        target.welcomeClip &&
-        oldMember.voiceChannel !== newChannel &&
-        newChannel !== undefined)
+    if (oldMember.voiceChannel !== newChannel &&
+        newChannel !== undefined &&
+        target &&
+        target.welcomeClip)
     {
         log('Target joined a voice channel');
 
-        playAudio(newChannel, target.welcomeClip);
+        playWelcomeClip(target, newChannel);
     }
+});
+
+client.on('ready', () =>
+{
+    log('Connected!');
+
+    client.user.setPresence({status: 'idle', game: {name: 'watersports'}});
+});
+
+client.on('error', (err) =>
+{
+    log('Websocket error!');
+    log(util.inspect(err, false, null));
 });
 
 process.on('SIGINT', () =>

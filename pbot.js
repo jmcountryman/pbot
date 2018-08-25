@@ -1,10 +1,13 @@
 const config = require('./config'); // eslint-disable-line import/no-unresolved
 const Discord = require('discord.js');
 const moment = require('moment');
-
 const util = require('util');
 
+const MILLISECONDS_PER_MINUTE = 60 * 1000;
+
 const client = new Discord.Client({disabledEvents: ['TYPING_START']});
+
+let lastActivate = null;
 
 const log = function log(message)
 {
@@ -34,6 +37,13 @@ const chipCount = function chipCount(target)
     });
 
     return name;
+};
+
+const getEmoji = function getEmoji(name)
+{
+    const emoji = client.emojis.find('name', name);
+
+    return emoji || '😀';
 };
 
 const playAudio = function playAudio(channel, file)
@@ -78,14 +88,31 @@ client.on('message', (message) =>
 {
     const author = message.member;
 
-    if (author.id === message.guild.owner.id ||
-        author.id === config.owner)
+    if (message.content.startsWith(config.commandPrefix))
     {
-        if (message.content.startsWith(config.commandPrefix))
-        {
-            const command = message.content.slice(config.commandPrefix.length).toLowerCase();
-            const channel = author.voiceChannel;
+        const command = message.content.slice(config.commandPrefix.length).toLowerCase();
+        const channel = author.voiceChannel;
 
+        if (command === 'activate')
+        {
+            const now = (new Date()).getTime();
+
+            if (lastActivate && now - lastActivate <= MILLISECONDS_PER_MINUTE)
+            {
+                message.react('👎');
+                return;
+            }
+
+            lastActivate = now;
+
+            const emoji = getEmoji('mello');
+            message.react(emoji);
+
+            playAudio(channel, 'assets/activate.mp3');
+        }
+        else if (author.id === message.guild.owner.id ||
+            author.id === config.owner)
+        {
             const target = config.targets.find('command', command);
 
             if (channel &&
@@ -93,7 +120,7 @@ client.on('message', (message) =>
                 target.welcomeClip &&
                 target.commandReaction)
             {
-                const emoji = client.emojis.find('name', target.commandReaction);
+                const emoji = getEmoji(target.commandReaction);
 
                 message.react(emoji);
                 playWelcomeClip(target, channel);

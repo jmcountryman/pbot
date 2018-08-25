@@ -93,6 +93,11 @@ client.on('message', (message) =>
         const command = message.content.slice(config.commandPrefix.length).toLowerCase();
         const channel = author.voiceChannel;
 
+        if (!channel)
+        {
+            return;
+        }
+
         if (command === 'activate')
         {
             const now = (new Date()).getTime();
@@ -115,8 +120,7 @@ client.on('message', (message) =>
         {
             const target = config.targets.find('command', command);
 
-            if (channel &&
-                target &&
+            if (target &&
                 target.welcomeClip &&
                 target.commandReaction)
             {

@@ -1,1 +1,1 @@
-docker build --tag pissbotdev .
+docker build --tag pbotdev .

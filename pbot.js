@@ -5,7 +5,7 @@ const util = require('util');
 
 const MILLISECONDS_PER_MINUTE = 60 * 1000;
 
-const client = new Discord.Client({disabledEvents: ['TYPING_START']});
+const client = new Discord.Client({ disabledEvents: ['TYPING_START'] });
 
 let lastActivate = null;
 
@@ -184,7 +184,7 @@ client.on('ready', () =>
 {
     log('Connected!');
 
-    client.user.setPresence({status: 'idle', game: {name: 'watersports'}});
+    client.user.setPresence({ status: 'idle', game: { name: 'watersports' } });
 });
 
 client.on('error', (err) =>

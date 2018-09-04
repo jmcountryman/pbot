@@ -1,4 +1,4 @@
-const {Collection} = require('discord.js');
+const { Collection } = require('discord.js');
 
 /*
  * An example config file. Rename this to "config.js" and fill in the empty values before running
@@ -80,9 +80,9 @@ module.exports = {
      * don't need to change these.
      */
     units: {
-        days: {max: 6},
-        weeks: {max: 3},
-        months: {max: 11},
-        years: {max: 100},
+        days: { max: 6 },
+        weeks: { max: 3 },
+        months: { max: 11 },
+        years: { max: 100 },
     },
 };

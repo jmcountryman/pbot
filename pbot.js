@@ -2,6 +2,7 @@ const config = require('./config'); // eslint-disable-line import/no-unresolved
 const Discord = require('discord.js');
 const moment = require('moment');
 const util = require('util');
+const mongo = require('./mongo_fs');
 
 const MILLISECONDS_PER_MINUTE = 60 * 1000;
 
@@ -51,9 +52,9 @@ const playAudio = function playAudio(channel, file)
     channel.join().then((connection) =>
     {
         log(`Joined voice channel "${channel.name}".`);
-        log(`Playing audio: ${file}...`);
+        log('Playing audio...');
 
-        const player = connection.playFile(file);
+        const player = connection.playStream(file);
 
         player.on('error', (err) =>
         {
@@ -70,18 +71,22 @@ const playAudio = function playAudio(channel, file)
     });
 };
 
-const playWelcomeClip = function playWelcomeClip(target, channel)
+const playWelcomeClip = function playWelcomeClip(guildId, targetId, channel)
 {
-    if (typeof target.welcomeClip === 'string')
+    mongo.getSoundList(guildId, targetId).then((sounds) =>
     {
-        playAudio(channel, target.welcomeClip);
-    }
-    else if (typeof target.welcomeClip === 'object' && target.welcomeClip.length > 0)
-    {
-        const randomIndex = Math.floor(Math.random() * target.welcomeClip.length);
+        if (sounds.length > 0)
+        {
+            const randIndex = Math.floor(Math.random() * sounds.length);
+            const sound = sounds[randIndex];
 
-        playAudio(channel, target.welcomeClip[randomIndex]);
-    }
+            log(`Fetching file ${sound.file_id}...`);
+
+            // eslint-disable-next-line no-underscore-dangle
+            const soundFile = mongo.getSound(sound.file_id);
+            playAudio(channel, soundFile);
+        }
+    });
 };
 
 client.on('message', (message) =>
@@ -167,16 +172,12 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
 
     const newChannel = newMember.voiceChannel;
 
-    const target = config.targets.get(newMember.id);
-
     if (oldMember.voiceChannel !== newChannel &&
-        newChannel !== undefined &&
-        target &&
-        target.welcomeClip)
+        newChannel !== undefined)
     {
         log('Target joined a voice channel');
 
-        playWelcomeClip(target, newChannel);
+        playWelcomeClip(newChannel.guild.id, newMember.id, newChannel);
     }
 });
 

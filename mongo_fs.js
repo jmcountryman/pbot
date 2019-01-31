@@ -23,7 +23,11 @@ module.exports.getSoundList = function getSoundList(guildId, userId)
 {
     if (fs)
     {
-        return collection.find({ guild_id: guildId, target_user: userId }).toArray();
+        return collection.find({
+            guild_id: guildId,
+            target_user: userId,
+            enabled: true,
+        }).toArray();
     }
 
     return null;
@@ -33,7 +37,7 @@ module.exports.getSound = function getSound(soundId)
 {
     if (fs)
     {
-        return fs.openDownloadStream(soundId);
+        return fs.openDownloadStream(mongodb.ObjectId(soundId));
     }
 
     return null;

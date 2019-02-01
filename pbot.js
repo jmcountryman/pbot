@@ -10,6 +10,9 @@ const client = new Discord.Client({ disabledEvents: ['TYPING_START'] });
 
 let lastActivate = null;
 
+let playingAudio = false;
+let queuedAudio = [];
+
 const log = function log(message)
 {
     const timestamp = moment();
@@ -47,28 +50,49 @@ const getEmoji = function getEmoji(name)
     return emoji || '😀';
 };
 
-const playAudio = function playAudio(channel, file)
+const playAudio = function playAudio(channel, fileId)
 {
-    channel.join().then((connection) =>
+    if (playingAudio)
     {
-        log(`Joined voice channel "${channel.name}".`);
-        log('Playing audio...');
+        log(`Already playing, queueing audio for ${channel.name}`);
+        queuedAudio = [channel, fileId];
+    }
+    else
+    {
+        log(`Fetching file ${fileId}...`);
+        const file = mongo.getSound(fileId);
 
-        const player = connection.playStream(file);
-
-        player.on('error', (err) =>
+        channel.join().then((connection) =>
         {
-            log('playAudio error!');
-            log(util.inspect(err, false, null));
-        });
+            playingAudio = true;
+            log(`Joined voice channel "${channel.name}".`);
+            log('Playing audio...');
 
-        player.on('end', () =>
-        {
-            log('Audio finished.');
-            log('Leaving voice channel.');
-            connection.disconnect();
+            const player = connection.playStream(file);
+
+            player.on('error', (err) =>
+            {
+                connection.disconnect();
+                log('Error in playAudio!');
+                log(util.inspect(err, false, null));
+            });
+
+            player.on('end', () =>
+            {
+                playingAudio = false;
+
+                log('Audio finished. Leaving voice channel.');
+                connection.disconnect();
+
+                if (queuedAudio.length === 2)
+                {
+                    log('Playing queued audio.');
+                    playAudio(queuedAudio[0], queuedAudio[1]);
+                    queuedAudio = [];
+                }
+            });
         });
-    });
+    }
 };
 
 const playWelcomeClip = function playWelcomeClip(guildId, targetId, channel)
@@ -80,11 +104,7 @@ const playWelcomeClip = function playWelcomeClip(guildId, targetId, channel)
             const randIndex = Math.floor(Math.random() * sounds.length);
             const sound = sounds[randIndex];
 
-            log(`Fetching file ${sound.file_id}...`);
-
-            // eslint-disable-next-line no-underscore-dangle
-            const soundFile = mongo.getSound(sound.file_id);
-            playAudio(channel, soundFile);
+            playAudio(channel, sound.file_id);
         }
     });
 };
@@ -168,14 +188,18 @@ client.on('presenceUpdate', (oldMember, newMember) =>
 // when Chris joins voice chat, welcome him
 client.on('voiceStateUpdate', (oldMember, newMember) =>
 {
-    log(`Voice status change: ${newMember.user.username} (${newMember.id})`);
+    if (newMember.id === client.user.id)
+    {
+        return;
+    }
 
     const newChannel = newMember.voiceChannel;
 
     if (oldMember.voiceChannel !== newChannel &&
         newChannel !== undefined)
     {
-        log('Target joined a voice channel');
+        log(`${newMember.user.username} (${newMember.id}) joined` +
+            ` voice channel "${newMember.voiceChannel.name}"`);
 
         playWelcomeClip(newChannel.guild.id, newMember.id, newChannel);
     }

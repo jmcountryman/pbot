@@ -218,13 +218,16 @@ client.on('error', (err) =>
     log(util.inspect(err, false, null));
 });
 
-process.on('SIGINT', () =>
+['SIGINT', 'SIGTERM'].forEach((signal) =>
 {
-    log('Caught Ctrl-C; bye.');
-
-    client.destroy().then(() =>
+    process.on(signal, () =>
     {
-        process.exit();
+        log('Caught Ctrl-C; bye.');
+
+        client.destroy().then(() =>
+        {
+            process.exit();
+        });
     });
 });
 

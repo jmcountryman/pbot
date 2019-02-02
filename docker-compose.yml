@@ -1,0 +1,68 @@
+version: '3'
+
+services:
+  dev:
+    build: .
+    depends_on:
+      - mongo
+      - web_dev
+
+  prod:
+    build:
+      context: .
+      args:
+        - config_file=config.prod.js
+    environment:
+      - CONFIG_DB=pbot
+    depends_on:
+      - mongo
+      - web_prod
+
+  web_prod:
+    build: ../pbot-admin-web
+    ports:
+      - "80:80"
+    depends_on:
+      - api_prod
+    links:
+      - "api_prod:api"
+  web_dev:
+    build: ../pbot-admin-web
+    ports:
+      - "80:80"
+    depends_on:
+      - api_dev
+    links:
+      - "api_dev:api"
+
+  api_prod:
+    build: ../pbot-admin-api
+    environment:
+      - RAILS_ENV=production
+    expose:
+      - "3000"
+    depends_on:
+      - pg
+      - mongo
+  api_dev:
+    build: ../pbot-admin-api
+    tty: true
+    stdin_open: true
+    expose:
+      - "3000"
+    depends_on:
+      - pg
+      - mongo
+    
+  pg: # Used for auth
+    image: postgres
+    expose:
+      - "5432"
+    volumes:
+      - ../pbot-data/db/pg:/var/lib/postgresql/data
+  mongo: # Stores pbot configuration
+    image: mongo
+    expose:
+      - "27017"
+    volumes:
+      - ../pbot-data/db/mongo:/data/db

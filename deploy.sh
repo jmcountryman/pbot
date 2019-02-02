@@ -1,9 +1,17 @@
-# Build a new image
-docker build --tag pbot --build-arg config_file=config.prod.js .
+# Fetch latest code
+git pull origin master
 
-# Replace the running container (if any) with one based on the new image
-docker stop pbot -t 10 && docker container rm pbot
-docker run -itd --name pbot pbot
+cd ../pbot-admin-api
+git pull origin master
+
+cd ../pbot-admin-web
+git pull origin master
+
+cd ../pbot
+
+# Build a new image
+docker-compose up --build prod
 
 # Remove old images to free up disk space
+docker container prune -f
 docker images | grep none | awk '{ print $3 }' | xargs docker rmi

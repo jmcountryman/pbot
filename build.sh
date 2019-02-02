@@ -1,1 +1,1 @@
-docker build --tag pbotdev .
+docker-compose up --build dev

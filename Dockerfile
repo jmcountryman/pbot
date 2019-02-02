@@ -15,11 +15,11 @@ RUN mkdir /ffmpeg && \
     rm -rf /var/cache/apk/*
 
 # Install node modules
-ADD package.json /
-ADD yarn.lock /
+ADD package.json .
+ADD yarn.lock .
 RUN yarn
 
 ADD . .
 ADD $config_file config.js
 
-CMD node pbot.js
+CMD sleep 20 && node pbot.js

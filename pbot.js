@@ -97,8 +97,11 @@ const playAudio = function playAudio(channel, fileId)
 
 const playWelcomeClip = function playWelcomeClip(guildId, targetId, channel)
 {
+    log(`Fetching intro sound list for user ${targetId} in guild ${guildId}...`);
     mongo.getSoundList(guildId, targetId).then((sounds) =>
     {
+        log(`Found ${sounds.length}.`);
+
         if (sounds.length > 0)
         {
             const randIndex = Math.floor(Math.random() * sounds.length);

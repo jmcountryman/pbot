@@ -10,7 +10,7 @@ git pull origin master
 cd ../pbot
 
 # Build a new image
-docker-compose up --build prod
+docker-compose up -d --build prod
 
 # Remove old images to free up disk space
 docker container prune -f

@@ -50,7 +50,37 @@ const getEmoji = function getEmoji(name)
     return emoji || '😀';
 };
 
-const playAudio = function playAudio(channel, fileId)
+const playAudioRaw = function playAudioRaw(channel, file)
+{
+    if (playingAudio)
+    {
+        return;
+    }
+
+    channel.join().then((connection) =>
+    {
+        log(`Joined voice channel "${channel.name}".`);
+        log(`Playing audio: ${file}...`);
+
+        const player = connection.playFile(file);
+
+        player.on('error', (err) =>
+        {
+            log('playAudio error!');
+            log(util.inspect(err, false, null));
+        });
+
+        player.on('end', () =>
+        {
+            log('Audio finished.');
+            log('Leaving voice channel.');
+            connection.disconnect();
+        });
+    });
+};
+
+
+const playAudioFromMongo = function playAudioFromMongo(channel, fileId)
 {
     if (playingAudio)
     {
@@ -87,7 +117,7 @@ const playAudio = function playAudio(channel, fileId)
                 if (queuedAudio.length === 2)
                 {
                     log('Playing queued audio.');
-                    playAudio(queuedAudio[0], queuedAudio[1]);
+                    playAudioFromMongo(queuedAudio[0], queuedAudio[1]);
                     queuedAudio = [];
                 }
             });
@@ -107,7 +137,7 @@ const playWelcomeClip = function playWelcomeClip(guildId, targetId, channel)
             const randIndex = Math.floor(Math.random() * sounds.length);
             const sound = sounds[randIndex];
 
-            playAudio(channel, sound.file_id);
+            playAudioFromMongo(channel, sound.file_id);
         }
     });
 };
@@ -128,6 +158,11 @@ client.on('message', (message) =>
 
         if (command === 'activate')
         {
+            if (playingAudio)
+            {
+                return;
+            }
+
             const now = (new Date()).getTime();
 
             if (lastActivate && now - lastActivate <= MILLISECONDS_PER_MINUTE)
@@ -141,7 +176,7 @@ client.on('message', (message) =>
             const emoji = getEmoji('mello');
             message.react(emoji);
 
-            playAudio(channel, 'assets/activate.mp3');
+            playAudioRaw(channel, 'assets/activate.mp3');
         }
         else if (author.id === message.guild.owner.id ||
             author.id === config.owner)

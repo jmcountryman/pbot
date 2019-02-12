@@ -33,6 +33,10 @@ module.exports = {
             '', // The target's ID.
             {
                 /*
+                 * The target's ID, again.
+                 */
+                id: '',
+                /*
                  * If these two values are set, the bot will change the user's to a "chip" based on
                  * how long it's been since coldTurkeyDate. coldTurkeyDateFormat is used by
                  * moment.js to parse coldTurkeyDate.

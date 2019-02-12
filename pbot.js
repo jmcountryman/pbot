@@ -183,14 +183,12 @@ client.on('message', (message) =>
         {
             const target = config.targets.find('command', command);
 
-            if (target &&
-                target.welcomeClip &&
-                target.commandReaction)
+            if (target && target.id && target.commandReaction)
             {
                 const emoji = getEmoji(target.commandReaction);
 
                 message.react(emoji);
-                playWelcomeClip(target, channel);
+                playWelcomeClip(message.guild.id, target.id, channel);
             }
         }
     }

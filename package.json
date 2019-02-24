@@ -6,7 +6,7 @@
     "discord.js": "^11.3.2",
     "moment": "^2.20.1",
     "mongodb": "^3.1.13",
-    "node-opus": "^0.2.7"
+    "node-opus": "^0.3.1"
   },
   "devDependencies": {
     "eslint": "^4.19.1",

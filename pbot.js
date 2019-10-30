@@ -221,12 +221,6 @@ client.on('presenceUpdate', (oldMember, newMember) =>
     }
 });
 
-const insults = [
-    'coward',
-    'motherfucker',
-    'you fuckin\' narc',
-];
-
 // when Chris joins voice chat, welcome him
 client.on('voiceStateUpdate', (oldMember, newMember) =>
 {
@@ -242,21 +236,6 @@ client.on('voiceStateUpdate', (oldMember, newMember) =>
     {
         log(`${newMember.user.username} (${newMember.id}) joined` +
             ` voice channel "${newMember.voiceChannel.name}"`);
-
-        if (newMember.id === '268560632951865346')
-        {
-            const chance = Math.random();
-
-            if (chance >= 0.75)
-            {
-                const textChannel = newMember.guild.channels.find('name', 'goals');
-                const rand = Math.random();
-                const randIndex = Math.floor(rand * insults.length);
-                const insult = insults[randIndex];
-
-                textChannel.send(`unblock me ${insult}`);
-            }
-        }
 
         playWelcomeClip(newChannel.guild.id, newMember.id, newChannel);
     }

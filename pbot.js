@@ -8,10 +8,15 @@ const MILLISECONDS_PER_MINUTE = 60 * 1000;
 
 const client = new Discord.Client({ disabledEvents: ['TYPING_START'] });
 
-let lastActivate = null;
+let lastAudioCommand = null;
 
 let playingAudio = false;
 let queuedAudio = [];
+
+const audioCommands = [
+	{command: 'activate', path: 'assets/activate.mp3', emoji: 'mello'}, 
+	{command: 'pookie', path: 'assets/pookie.mp3', emoji: 'fartnite')}, 
+	{command: 'revolution', path: 'assets/revolution.mp3', emoji: 'falgsc'}];
 
 const log = function log(message)
 {
@@ -155,29 +160,28 @@ client.on('message', (message) =>
         {
             return;
         }
-
-        if (command === 'activate')
-        {
-            if (playingAudio)
+		const validCommand = audioCommands.find(obj => { return obj.command === command });
+		if(validCommand !== undefined)
+		{
+			if (playingAudio)
             {
                 return;
             }
-
             const now = (new Date()).getTime();
 
-            if (lastActivate && now - lastActivate <= MILLISECONDS_PER_MINUTE)
+            if (lastAudioCommand && now - lastAudioCommand <= MILLISECONDS_PER_MINUTE)
             {
                 message.react('👎');
                 return;
             }
 
-            lastActivate = now;
+            lastAudioCommand = now;
 
-            const emoji = getEmoji('mello');
+            const emoji = getEmoji(validCommand.emoji);
             message.react(emoji);
 
-            playAudioRaw(channel, 'assets/activate.mp3');
-        }
+            playAudioRaw(channel, validCommand.path);
+		}
         else if (author.id === message.guild.owner.id ||
             author.id === config.owner)
         {

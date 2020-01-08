@@ -14,9 +14,10 @@ let playingAudio = false;
 let queuedAudio = [];
 
 const audioCommands = [
-	{command: 'activate', path: 'assets/activate.mp3', emoji: 'mello'}, 
-	{command: 'pookie', path: 'assets/pookie.mp3', emoji: 'fartnite')}, 
-	{command: 'revolution', path: 'assets/revolution.mp3', emoji: 'falgsc'}];
+    { command: 'activate', path: 'assets/activate.mp3', emoji: 'mello' },
+    { command: 'pookie', path: 'assets/pookie.mp3', emoji: 'fartnite' },
+    { command: 'revolution', path: 'assets/revolution.mp3', emoji: 'falgsc' },
+];
 
 const log = function log(message)
 {
@@ -160,10 +161,11 @@ client.on('message', (message) =>
         {
             return;
         }
-		const validCommand = audioCommands.find(obj => { return obj.command === command });
-		if(validCommand !== undefined)
-		{
-			if (playingAudio)
+        const validCommand = audioCommands.find(c => c.command === command);
+
+        if (validCommand !== undefined)
+        {
+            if (playingAudio)
             {
                 return;
             }
@@ -181,7 +183,7 @@ client.on('message', (message) =>
             message.react(emoji);
 
             playAudioRaw(channel, validCommand.path);
-		}
+        }
         else if (author.id === message.guild.owner.id ||
             author.id === config.owner)
         {

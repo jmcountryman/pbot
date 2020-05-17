@@ -155,20 +155,23 @@ client.on('message', (message) =>
     if (message.content.startsWith(config.commandPrefix))
     {
         const command = message.content.slice(config.commandPrefix.length).toLowerCase();
-        const channel = author.voiceChannel;
 
-        if (!channel)
-        {
-            return;
-        }
-        const validCommand = audioCommands.find(c => c.command === command);
+        const audioCommand = audioCommands.find(c => c.command === command);
 
-        if (validCommand !== undefined)
+        if (audioCommand)
         {
+            const channel = author.voiceChannel;
+
+            if (!channel)
+            {
+                return;
+            }
+
             if (playingAudio)
             {
                 return;
             }
+
             const now = (new Date()).getTime();
 
             if (lastAudioCommand && now - lastAudioCommand <= MILLISECONDS_PER_MINUTE)
@@ -179,10 +182,29 @@ client.on('message', (message) =>
 
             lastAudioCommand = now;
 
-            const emoji = getEmoji(validCommand.emoji);
+            const emoji = getEmoji(audioCommand.emoji);
             message.react(emoji);
 
-            playAudioRaw(channel, validCommand.path);
+            playAudioRaw(channel, audioCommand.path);
+        }
+        else if (command === 'roll')
+        {
+            console.log(`User ${author.id} used !roll`);
+
+            const number = Math.ceil(Math.random() * 100);
+            const reply = `${author} rolled ${number}`;
+
+            message.channel.send(reply).then((sentMessage) =>
+            {
+                if (number === 69)
+                {
+                    sentMessage.react('😜');
+                }
+                if (number === 100)
+                {
+                    sentMessage.react('💯');
+                }
+            });
         }
         else if (author.id === message.guild.owner.id ||
             author.id === config.owner)

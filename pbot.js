@@ -9,6 +9,7 @@ const MILLISECONDS_PER_MINUTE = 60 * 1000;
 const client = new Discord.Client({ disabledEvents: ['TYPING_START'] });
 
 let lastAudioCommand = null;
+let lastSimpsCommand = null;
 
 let playingAudio = false;
 let queuedAudio = [];
@@ -51,7 +52,7 @@ const chipCount = function chipCount(target)
 
 const getEmoji = function getEmoji(name)
 {
-    const emoji = client.emojis.find('name', name);
+    const emoji = client.emojis.find(candidate => candidate.name === name);
 
     return emoji || '😀';
 };
@@ -155,6 +156,7 @@ client.on('message', (message) =>
     if (message.content.startsWith(config.commandPrefix))
     {
         const command = message.content.slice(config.commandPrefix.length).toLowerCase();
+        console.log(`Got command string '!${command}' from user ${author.id}`);
 
         const audioCommand = audioCommands.find(c => c.command === command);
 
@@ -189,8 +191,6 @@ client.on('message', (message) =>
         }
         else if (command === 'roll')
         {
-            console.log(`User ${author.id} used !roll`);
-
             const number = Math.ceil(Math.random() * 100);
             const reply = `${author} rolled ${number}`;
 
@@ -206,18 +206,25 @@ client.on('message', (message) =>
                 }
             });
         }
-        else if (author.id === message.guild.owner.id ||
-            author.id === config.owner)
+        else if (command === 'simps' || command === 'simpgang')
         {
-            const target = config.targets.find('command', command);
+            const now = (new Date()).getTime();
 
-            if (target && target.id && target.commandReaction)
+            if (lastSimpsCommand && now - lastSimpsCommand <= MILLISECONDS_PER_MINUTE * 10)
             {
-                const emoji = getEmoji(target.commandReaction);
-
-                message.react(emoji);
-                playWelcomeClip(message.guild.id, target.id, channel);
+                message.react('👎');
+                message.react('🔟');
+                return;
             }
+
+            lastSimpsCommand = now;
+
+            const emoji = getEmoji('games');
+            message.channel.send(`@here ${emoji}`);
+        }
+        else
+        {
+            message.react('❓');
         }
     }
 });

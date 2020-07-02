@@ -3,6 +3,8 @@ version: '3'
 services:
   dev:
     build: .
+    volumes:
+      - ./:/pbot
     depends_on:
       - mongo
       - web_dev
@@ -53,7 +55,7 @@ services:
     depends_on:
       - pg
       - mongo
-    
+
   pg: # Used for auth
     image: postgres
     expose:

@@ -3,10 +3,10 @@
     "lint": "eslint *.js"
   },
   "dependencies": {
-    "discord.js": "^11.5.1",
+    "@discordjs/opus": "^0.3.2",
+    "discord.js": "^12.2.0",
     "moment": "^2.20.1",
-    "mongodb": "^3.1.13",
-    "node-opus": "^0.3.1"
+    "mongodb": "^3.5.9"
   },
   "devDependencies": {
     "eslint": "^4.19.1",

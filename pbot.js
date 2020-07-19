@@ -27,32 +27,9 @@ const log = function log(message)
     console.log(`${timestamp} ${message}`);
 };
 
-const chipCount = function chipCount(target)
-{
-    const startDate = moment(target.coldTurkeyDate, target.coldTurkeyDateFormat);
-    const today = moment();
-
-    let name = '';
-
-    Object.keys(config.units).some((unit) =>
-    {
-        const diff = today.diff(startDate, unit);
-
-        if (diff <= config.units[unit].max)
-        {
-            name = `${diff}-${unit.slice(0, -1)} chip`;
-            return true;
-        }
-
-        return false;
-    });
-
-    return name;
-};
-
 const getEmoji = function getEmoji(name)
 {
-    const emoji = client.emojis.find(candidate => candidate.name === name);
+    const emoji = client.emojis.cache.find(candidate => candidate.name === name);
 
     return emoji || '😀';
 };
@@ -69,7 +46,7 @@ const playAudioRaw = function playAudioRaw(channel, file)
         log(`Joined voice channel "${channel.name}".`);
         log(`Playing audio: ${file}...`);
 
-        const player = connection.playFile(file);
+        const player = connection.play(file);
 
         player.on('error', (err) =>
         {
@@ -77,7 +54,7 @@ const playAudioRaw = function playAudioRaw(channel, file)
             log(util.inspect(err, false, null));
         });
 
-        player.on('end', () =>
+        player.on('finish', () =>
         {
             log('Audio finished.');
             log('Leaving voice channel.');
@@ -105,7 +82,7 @@ const playAudioFromMongo = function playAudioFromMongo(channel, fileId)
             log(`Joined voice channel "${channel.name}".`);
             log('Playing audio...');
 
-            const player = connection.playStream(file);
+            const player = connection.play(file);
 
             player.on('error', (err) =>
             {
@@ -114,7 +91,7 @@ const playAudioFromMongo = function playAudioFromMongo(channel, fileId)
                 log(util.inspect(err, false, null));
             });
 
-            player.on('end', () =>
+            player.on('finish', () =>
             {
                 playingAudio = false;
 
@@ -160,17 +137,21 @@ client.on('message', (message) =>
 
         const audioCommand = audioCommands.find(c => c.command === command);
 
+        if (audioCommand) console.log(`Found audio command for !${command}`);
+
         if (audioCommand)
         {
-            const channel = author.voiceChannel;
+            const { channel } = author.voice;
 
             if (!channel)
             {
+                console.log('... but user is not in a voice channel');
                 return;
             }
 
             if (playingAudio)
             {
+                console.log('... but I\'m already playing audio');
                 return;
             }
 
@@ -229,50 +210,23 @@ client.on('message', (message) =>
     }
 });
 
-// when Chris logs on, update his nickname
-client.on('presenceUpdate', (oldMember, newMember) =>
+// when someone joins voice chat, welcome them
+client.on('voiceStateUpdate', (oldState, newState) =>
 {
-    log(`User presence change: ${newMember.user.username} (${newMember.id}), ${oldMember.presence.status} => ${newMember.presence.status}`);
+    const newMember = newState.member;
+    const newChannel = newState.channel;
 
-    if (oldMember.presence.status === 'offline' &&
-        newMember.presence.status === 'online')
-    {
-        const target = config.targets.get(newMember.id);
-
-        if (target &&
-            target.coldTurkeyDate &&
-            target.coldTurkeyDateFormat)
-        {
-            log('Target logged on!');
-
-            const newNickname = chipCount(target);
-
-            if (oldMember.nickname !== newNickname)
-            {
-                log('Changing nickname.');
-                newMember.setNickname(newNickname);
-            }
-        }
-    }
-});
-
-// when Chris joins voice chat, welcome him
-client.on('voiceStateUpdate', (oldMember, newMember) =>
-{
     if (newMember.id === client.user.id)
     {
         return;
     }
 
-    const newChannel = newMember.voiceChannel;
-
-    if (oldMember.voiceChannel !== newChannel &&
-        newChannel !== undefined)
+    if (newChannel && oldState.channel !== newChannel)
     {
         log(`${newMember.user.username} (${newMember.id}) joined` +
-            ` voice channel "${newMember.voiceChannel.name}"`);
+            ` voice channel "${newChannel.name}"`);
 
-        playWelcomeClip(newChannel.guild.id, newMember.id, newChannel);
+        playWelcomeClip(newState.guild.id, newMember.id, newChannel);
     }
 });
 
@@ -280,7 +234,7 @@ client.on('ready', () =>
 {
     log('Connected!');
 
-    client.user.setPresence({ status: 'idle', game: { name: 'watersports' } });
+    client.user.setPresence({ status: 'idle', activity: { type: 'WATCHING', name: '👀' } });
 });
 
 client.on('error', (err) =>
@@ -295,10 +249,8 @@ client.on('error', (err) =>
     {
         log('Caught Ctrl-C; bye.');
 
-        client.destroy().then(() =>
-        {
-            process.exit();
-        });
+        client.destroy();
+        process.exit();
     });
 });
 

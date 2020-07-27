@@ -68,8 +68,10 @@ const playAudioFromMongo = function playAudioFromMongo(channel, fileId)
 {
     if (playingAudio)
     {
-        log(`Already playing, queueing audio for ${channel.name}`);
-        queuedAudio = [channel, fileId];
+        log('Already playing audio, ignoring (for now)');
+        // TODO: re-enable this once the connection timeout thing is figured out
+        // log(`Already playing, queueing audio for ${channel.name}`);
+        // queuedAudio = [channel, fileId];
     }
     else
     {

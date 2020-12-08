@@ -138,8 +138,24 @@ client.on('message', (message) =>
         console.log(`Got command string '!${command}' from user ${author.id}`);
 
         const audioCommand = audioCommands.find(c => c.command === command);
+        const isMongoCommand = false;
 
-        if (audioCommand) console.log(`Found audio command for !${command}`);
+        if (audioCommand)
+        {
+            console.log(`Found audio command for !${command}`);
+        }
+        else
+        {
+            mongo.getCommand(command).then((commands) =>
+            {
+                if (commands.length > 0)
+                {
+                    audioCommand = commands[0];
+                    console.log(`Found audio command in mongo for !${command}`);
+                    isMongoCommand = true;
+                }
+            })
+        } 
 
         if (audioCommand)
         {

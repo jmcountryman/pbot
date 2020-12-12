@@ -186,7 +186,7 @@ client.on('message', (message) =>
             const emoji = getEmoji(audioCommand.emoji);
             message.react(emoji);
 
-            isMongoCommand ? playAudioFromMongo(channel, audioCommand.path) : playAudioRaw(channel, audioCommand.path);
+            isMongoCommand ? playAudioFromMongo(channel, audioCommand.fileId) : playAudioRaw(channel, audioCommand.path);
         }
         else if (command === 'roll')
         {

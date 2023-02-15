@@ -2,11 +2,22 @@ const config = require('./config'); // eslint-disable-line import/no-unresolved
 const Discord = require('discord.js');
 const moment = require('moment');
 const util = require('util');
+const Commands = require('./commands');
 const mongo = require('./mongo_fs');
 
 const MILLISECONDS_PER_MINUTE = 60 * 1000;
 
-const client = new Discord.Client({ disabledEvents: ['TYPING_START'] });
+Commands.deployCommands();
+
+const client = new Discord.Client({
+    disabledEvents: ['TYPING_START'],
+    intents: [Discord.GatewayIntentBits.GuildVoiceStates],
+});
+
+// Set up commands
+client.commands = new Discord.Collection();
+client.cooldowns = new Discord.Collection();
+Commands.loadCommands(client);
 
 let lastAudioCommand = null;
 let lastSimpsCommand = null;
@@ -128,89 +139,115 @@ const playWelcomeClip = function playWelcomeClip(guildId, targetId, channel)
     });
 };
 
-client.on('message', (message) =>
+client.on(Discord.Events.InteractionCreate, async (interaction) =>
 {
-    const author = message.member;
+    if (!interaction.isChatInputCommand()) return;
 
-    if (message.content.startsWith(config.commandPrefix))
+    const command = interaction.client.commands.get(interaction.commandName);
+
+    if (command)
     {
-        const command = message.content.slice(config.commandPrefix.length).toLowerCase();
-        console.log(`Got command string '!${command}' from user ${author.id}`);
-
-        const audioCommand = audioCommands.find(c => c.command === command);
-
-        if (audioCommand) console.log(`Found audio command for !${command}`);
-
-        if (audioCommand)
+        try
         {
-            const { channel } = author.voice;
-
-            if (!channel)
-            {
-                console.log('... but user is not in a voice channel');
-                return;
-            }
-
-            if (playingAudio)
-            {
-                console.log('... but I\'m already playing audio');
-                return;
-            }
-
-            const now = (new Date()).getTime();
-
-            if (lastAudioCommand && now - lastAudioCommand <= MILLISECONDS_PER_MINUTE)
-            {
-                message.react('👎');
-                return;
-            }
-
-            lastAudioCommand = now;
-
-            const emoji = getEmoji(audioCommand.emoji);
-            message.react(emoji);
-
-            playAudioRaw(channel, audioCommand.path);
+            await command.handler(interaction);
         }
-        else if (command === 'roll')
+        catch (error)
         {
-            const number = Math.ceil(Math.random() * 100);
-            const reply = `${author} rolled ${number}`;
-
-            message.channel.send(reply).then((sentMessage) =>
-            {
-                if (number === 69)
-                {
-                    sentMessage.react('😜');
-                }
-                if (number === 100)
-                {
-                    sentMessage.react('💯');
-                }
+            interaction.reply({
+                content: 'I ran into a problem. It\'s your fault.',
+                ephemeral: true,
             });
         }
-        else if (command === 'simps' || command === 'simpgang')
-        {
-            const now = (new Date()).getTime();
-
-            if (lastSimpsCommand && now - lastSimpsCommand <= MILLISECONDS_PER_MINUTE * 10)
-            {
-                message.react('👎');
-                message.react('🔟');
-                return;
-            }
-
-            lastSimpsCommand = now;
-
-            const emoji = getEmoji('games');
-            message.channel.send(`@here ${emoji}`);
-        }
-        else
-        {
-            message.react('❓');
-        }
+    }
+    else
+    {
+        log(`Error: no command matching ${interaction.commandName}`);
     }
 });
+
+// client.on('message', (message) =>
+// {
+//     const author = message.member;
+
+//     if (message.content.startsWith(config.commandPrefix))
+//     {
+//         const command = message.content.slice(config.commandPrefix.length).toLowerCase();
+//         console.log(`Got command string '!${command}' from user ${author.id}`);
+
+//         const audioCommand = audioCommands.find(c => c.command === command);
+
+//         if (audioCommand) console.log(`Found audio command for !${command}`);
+
+//         if (audioCommand)
+//         {
+//             const { channel } = author.voice;
+
+//             if (!channel)
+//             {
+//                 console.log('... but user is not in a voice channel');
+//                 return;
+//             }
+
+//             if (playingAudio)
+//             {
+//                 console.log('... but I\'m already playing audio');
+//                 return;
+//             }
+
+//             const now = (new Date()).getTime();
+
+//             if (lastAudioCommand && now - lastAudioCommand <= MILLISECONDS_PER_MINUTE)
+//             {
+//                 message.react('👎');
+//                 return;
+//             }
+
+//             lastAudioCommand = now;
+
+//             const emoji = getEmoji(audioCommand.emoji);
+//             message.react(emoji);
+
+//             playAudioRaw(channel, audioCommand.path);
+//         }
+//         else if (command === 'roll')
+//         {
+//             const number = Math.ceil(Math.random() * 100);
+//             const reply = `${author} rolled ${number}`;
+
+//             message.channel.send(reply).then((sentMessage) =>
+//             {
+//                 if (number === 69)
+//                 {
+//                     sentMessage.react('😜');
+//                 }
+//                 if (number === 100)
+//                 {
+//                     sentMessage.react('💯');
+//                 }
+//             });
+//         }
+//         else if (command === 'simps' || command === 'simpgang')
+//         {
+//             const now = (new Date()).getTime();
+
+//             if (lastSimpsCommand && now - lastSimpsCommand <= MILLISECONDS_PER_MINUTE * 10)
+//             {
+//                 message.react('👎');
+//                 message.react('🔟');
+//                 return;
+//             }
+
+//             lastSimpsCommand = now;
+
+//             const emoji = getEmoji('games');
+//             message.channel.send(`@here ${emoji}`);
+//         }
+//         else
+//         {
+//             message.react('❓');
+//         }
+//     }
+// });
 
 // when someone joins voice chat, welcome them
 client.on('voiceStateUpdate', (oldState, newState) =>

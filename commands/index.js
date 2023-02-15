@@ -5,9 +5,10 @@ const { clientId, guildId, token } = require('../config');
 
 const forEachCommand = (callback) =>
 {
-    const commandFiles = fs.readdirSync(__dirname).filter(file => file.endsWith('.js'));
+    const commandFiles = fs.readdirSync(__dirname).filter(file =>
+        file.endsWith('.js') && !file.startsWith('index.'));
 
-    commandFiles.each((file) =>
+    commandFiles.forEach((file) =>
     {
         const filePath = path.join(__dirname, file);
         const command = require(filePath); // eslint-disable-line

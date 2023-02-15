@@ -11,7 +11,7 @@ Commands.deployCommands();
 
 const client = new Discord.Client({
     disabledEvents: ['TYPING_START'],
-    intents: [Discord.GatewayIntentBits.GuildVoiceStates],
+    intents: [Discord.GatewayIntentBits.GuildVoiceStates]
 });
 
 // Set up commands

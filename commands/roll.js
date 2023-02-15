@@ -1,5 +1,18 @@
 const { SlashCommandBuilder } = require('discord.js');
 
+const getReaction = (number) =>
+{
+    switch (number)
+    {
+        case 69:
+            return '😜';
+        case 100:
+            return '💯';
+        default:
+            return '';
+    }
+};
+
 const data = new SlashCommandBuilder()
     .setName('roll')
     .setDescription('Rolls a random number between 1 and 100 (inclusive)');
@@ -7,19 +20,10 @@ const data = new SlashCommandBuilder()
 const handler = async (interaction) =>
 {
     const author = interaction.member;
-    const number = Math.ceil(Math.random() * 100);
-    const content = `${author.toString()} rolled ${number}`;
+    const number = Math.floor(Math.random() * 100) + 1;
+    const content = `${author.toString()} rolled ${number} ${getReaction(number)}`.trim();
 
-    const sentMessage = await interaction.reply({ content, fetchReply: true });
-
-    if (number === 69)
-    {
-        sentMessage.react('😜');
-    }
-    else if (number === 100)
-    {
-        sentMessage.react('💯');
-    }
+    await interaction.reply({ content });
 };
 
 module.exports = { data, handler };

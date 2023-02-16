@@ -16,7 +16,7 @@ const client = new Discord.Client({
 
 // Set up commands
 client.commands = new Discord.Collection();
-client.cooldowns = new Discord.Collection();
+client.commandTimes = new Discord.Collection();
 Commands.loadCommands(client);
 
 let lastAudioCommand = null;
@@ -36,6 +36,11 @@ const log = function log(message)
     const timestamp = moment();
 
     console.log(`${timestamp} ${message}`);
+};
+
+const now = function now()
+{
+    return (new Date()).getTime();
 };
 
 const getEmoji = function getEmoji(name)
@@ -139,6 +144,7 @@ const playWelcomeClip = function playWelcomeClip(guildId, targetId, channel)
     });
 };
 
+// Handle slash commands
 client.on(Discord.Events.InteractionCreate, async (interaction) =>
 {
     if (!interaction.isChatInputCommand()) return;
@@ -147,15 +153,36 @@ client.on(Discord.Events.InteractionCreate, async (interaction) =>
 
     if (command)
     {
-        try
+        const commandUsedAt = interaction.client.commandTimes.get(interaction.commandName);
+
+        // If the command hasn't been used, doesn't have a cooldown, or the cooldown has passed
+        if (!commandUsedAt
+            || !command.cooldown
+            || now() >= (commandUsedAt + command.cooldown))
         {
-            await command.handler(interaction);
+            try
+            {
+                await command.handler(interaction);
+                interaction.client.commandTimes.set(interaction.commandName, now());
+            }
+            catch (error)
+            {
+                interaction.reply({
+                    content: 'I ran into a problem. It\'s your fault.',
+                    ephemeral: true,
+                });
+            }
         }
-        catch (error)
+        else // The command is on cooldown
         {
+            const remainingCooldown =
+                Math.ceil(((commandUsedAt + command.cooldown) - now()) / 1000);
+
+            log(`Command /${interaction.commandName} is on cooldown until ${commandUsedAt + command.cooldown} (${remainingCooldown} seconds from now)`);
+
             interaction.reply({
-                content: 'I ran into a problem. It\'s your fault.',
-                ephemeral: true,
+                content: `Chill out! (You can use this command again in ${remainingCooldown} seconds)`,
+                ephemeral: true
             });
         }
     }
@@ -194,15 +221,13 @@ client.on(Discord.Events.InteractionCreate, async (interaction) =>
 //                 return;
 //             }
 
-//             const now = (new Date()).getTime();
-
-//             if (lastAudioCommand && now - lastAudioCommand <= MILLISECONDS_PER_MINUTE)
+//             if (lastAudioCommand && now() - lastAudioCommand <= MILLISECONDS_PER_MINUTE)
 //             {
 //                 message.react('👎');
 //                 return;
 //             }
 
-//             lastAudioCommand = now;
+//             lastAudioCommand = now();
 
 //             const emoji = getEmoji(audioCommand.emoji);
 //             message.react(emoji);
@@ -228,16 +253,14 @@ client.on(Discord.Events.InteractionCreate, async (interaction) =>
 //         }
 //         else if (command === 'simps' || command === 'simpgang')
 //         {
-//             const now = (new Date()).getTime();
-
-//             if (lastSimpsCommand && now - lastSimpsCommand <= MILLISECONDS_PER_MINUTE * 10)
+//             if (lastSimpsCommand && now() - lastSimpsCommand <= MILLISECONDS_PER_MINUTE * 10)
 //             {
 //                 message.react('👎');
 //                 message.react('🔟');
 //                 return;
 //             }
 
-//             lastSimpsCommand = now;
+//             lastSimpsCommand = now();
 
 //             const emoji = getEmoji('games');
 //             message.channel.send(`@here ${emoji}`);

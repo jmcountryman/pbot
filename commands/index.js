@@ -24,6 +24,7 @@ const forEachCommand = (callback) =>
     });
 };
 
+// Tell Discord about our commands
 const deployCommands = () =>
 {
     const allCommands = [];
@@ -43,7 +44,7 @@ const deployCommands = () =>
     {
         rest.put(route, { body: allCommands }).then(() =>
         {
-            console.log('Commands successfully deployed');
+            console.log(`Successfully deployed ${allCommands.length} commands`);
             resolve();
         }).catch((error) =>
         {
@@ -53,6 +54,7 @@ const deployCommands = () =>
     });
 };
 
+// Set up the handlers for our commands on the client object
 const loadCommands = (client) =>
 {
     forEachCommand((command) =>

@@ -57,13 +57,10 @@ const handler = audioFilePath => interaction => new Promise((resolve) =>
 
                     // Set up the audio player
                     const player = createAudioPlayer({ behaviors: [NoSubscriberBehavior.Pause] });
-                    player.started = false;
                     player.play(createAudioResource(audioFilePath));
 
-                    // Keep track of whether the player has started yet
                     player.on(AudioPlayerStatus.Playing, () =>
                     {
-                        player.started = true;
                         interaction.editReply({
                             content: '🔊',
                             ephemeral: true

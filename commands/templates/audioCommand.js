@@ -8,6 +8,8 @@ const {
     VoiceConnectionStatus
 } = require('@discordjs/voice');
 
+const log = require('../../log');
+
 // Resolves as `true` if the audio was played (which applies the cooldown), or `false` otherwise
 const handler = audioFilePath => interaction => new Promise((resolve) =>
 {
@@ -40,8 +42,8 @@ const handler = audioFilePath => interaction => new Promise((resolve) =>
                         }))
                         .catch((e) =>
                         {
-                            console.log(`Error fetching channel ${existingConnection.joinConfig.channelId}`);
-                            console.log(e);
+                            log(`Error fetching channel ${existingConnection.joinConfig.channelId}`);
+                            log(e);
 
                             interaction.editReply({
                                 content: 'I can only play audio in one channel at a time, try again in a couple seconds.',
@@ -74,10 +76,10 @@ const handler = audioFilePath => interaction => new Promise((resolve) =>
                     {
                         player.stop();
                         connection.destroy();
-                        console.log('Voice connection cleaned up');
+                        log('Voice connection cleaned up');
                     });
 
-                    console.log(`Joining voice channel ${voiceChannelId} in guild ${interaction.guild.id}`);
+                    log(`Joining voice channel ${voiceChannelId} in guild ${interaction.guild.id}`);
 
                     // Join the voice channel
                     connection = joinVoiceChannel({
@@ -90,7 +92,7 @@ const handler = audioFilePath => interaction => new Promise((resolve) =>
                     // When we're connected to the voice channel, play the audio
                     connection.on(VoiceConnectionStatus.Ready, () =>
                     {
-                        console.log(`Voice connection ready, playing ${audioFilePath}`);
+                        log(`Voice connection ready, playing ${audioFilePath}`);
                         connection.subscribe(player);
                         player.unpause();
                     });
@@ -98,7 +100,7 @@ const handler = audioFilePath => interaction => new Promise((resolve) =>
                     // Clean up if an error occurs
                     connection.on(VoiceConnectionStatus.Disconnected, () =>
                     {
-                        console.log('Disconnected');
+                        log('Disconnected');
                         player.stop();
                         connection.destroy();
                         resolve(false);

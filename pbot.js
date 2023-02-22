@@ -8,10 +8,10 @@ const {
     NoSubscriberBehavior,
     VoiceConnectionStatus
 } = require('@discordjs/voice');
-const moment = require('moment');
 const util = require('util');
 
 const { token } = require('./config'); // eslint-disable-line import/no-unresolved
+const log = require('./log');
 const Commands = require('./commands');
 const mongo = require('./mongo_fs');
 
@@ -27,14 +27,6 @@ const client = new Discord.Client({
 client.commands = new Discord.Collection();
 client.commandTimes = new Discord.Collection();
 Commands.loadCommands(client);
-
-
-const log = function log(message)
-{
-    const timestamp = moment();
-
-    console.log(`${timestamp} ${message}`);
-};
 
 const now = function now()
 {

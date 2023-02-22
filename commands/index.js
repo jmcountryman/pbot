@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { REST, Routes } = require('discord.js');
 const { clientId, guildId, token } = require('../config');
+const log = require('../log');
 
 const forEachCommand = (callback) =>
 {
@@ -19,7 +20,7 @@ const forEachCommand = (callback) =>
         }
         else
         {
-            console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "handler" property.`);
+            log(`[WARNING] The command at ${filePath} is missing a required "data" or "handler" property.`);
         }
     });
 };
@@ -44,11 +45,12 @@ const deployCommands = () =>
     {
         rest.put(route, { body: allCommands }).then(() =>
         {
-            console.log(`Successfully deployed ${allCommands.length} commands`);
+            log(`Successfully deployed ${allCommands.length} commands`);
             resolve();
         }).catch((error) =>
         {
-            console.log('Error while deploying commands:', error);
+            log('Error while deploying commands:');
+            log(error);
             reject();
         });
     });

@@ -5,5 +5,6 @@ module.exports = {
         'indent':               ['error', 4, {'SwitchCase': 1}],
         'no-console':           'off',
         'object-curly-spacing': ['error', 'always'],
+        'comma-dangle':         'off'
     },
 };

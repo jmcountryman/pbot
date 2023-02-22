@@ -171,7 +171,10 @@ client.on(Discord.Events.ClientReady, () =>
 {
     log('Connected!');
 
-    client.user.setPresence({ status: 'idle', activity: { type: 'WATCHING', name: '👀' } });
+    client.user.setPresence({
+        status: 'idle',
+        activities: [{ type: Discord.ActivityType.Watching, name: '👀' }]
+    });
 });
 
 client.on(Discord.Events.Error, (err) =>

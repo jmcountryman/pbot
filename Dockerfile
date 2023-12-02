@@ -22,4 +22,4 @@ RUN yarn
 ADD . .
 ADD $config_file config.js
 
-CMD sleep 20 && node pbot.js
+CMD sleep 10 && node pbot.js

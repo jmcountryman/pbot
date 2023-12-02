@@ -7,7 +7,7 @@ services:
       - ./:/pbot
     depends_on:
       - mongo
-      - web_dev
+      #- web_dev
 
   prod:
     build:
@@ -19,6 +19,7 @@ services:
     depends_on:
       - mongo
       - web_prod
+    restart: always
 
   web_prod:
     build: ../pbot-admin-web
@@ -57,14 +58,15 @@ services:
       - mongo
 
   pg: # Used for auth
-    image: postgres
+    image: postgres:11-bullseye
     expose:
       - "5432"
     volumes:
       - ../pbot-data/db/pg:/var/lib/postgresql/data
   mongo: # Stores pbot configuration
-    image: mongo
+    image: mongo:4.2.24
     expose:
       - "27017"
     volumes:
       - ../pbot-data/db/mongo:/data/db
+    restart: always

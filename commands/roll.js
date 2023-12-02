@@ -19,9 +19,8 @@ const data = new SlashCommandBuilder()
 
 const handler = async (interaction) =>
 {
-    const author = interaction.member;
     const number = Math.floor(Math.random() * 100) + 1;
-    const content = `${author.toString()} rolled ${number} ${getReaction(number)}`.trim();
+    const content = `${number} ${getReaction(number)}`.trim();
 
     await interaction.reply({ content });
 };

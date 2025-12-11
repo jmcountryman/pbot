@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:24-alpine
 
 ARG config_file=config.js
 
